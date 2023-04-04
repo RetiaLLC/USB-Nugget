@@ -98,7 +98,7 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
   display->drawString(0, 54, "RUNNING PAYLOAD");
   display->display();
   
-  if (tCommand.equals("REM")) {
+  if (tCommand.equals("//")) {
     Serial.println("Comment");
   }
   else if (tCommand.equals("LOCALE")) {
@@ -168,8 +168,8 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
     }
     strip->show(); strip->show();
   }
-  else if (tCommand.equals("STRING")) {
-    display->drawString(3,12,"STRING: ");
+  else if (tCommand.equals("TYPE")) {
+    display->drawString(3,12,"TYPE: ");
     if (String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())).length() > 11) {
       display->drawString(3,22,String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())).substring(0,8)+"...");
     }
@@ -178,7 +178,6 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
     }
     display->drawXbm(0, 0, 128, 64, cat_with_one_exclamation_point_image_bits);
     display->display();
-    Serial.println("String");
     String tmpString = String(ducky.substring(ducky.indexOf(' ')+1, ducky.length()));
     keyboard.sendString(tmpString);    
   }  

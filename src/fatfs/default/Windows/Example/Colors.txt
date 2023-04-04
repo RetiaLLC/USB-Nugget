@@ -1,9 +1,9 @@
 GUI R
 DELAY 1000
-STRING cmd
+TYPE cmd
 ENTER
 DELAY 500
-STRING echo trying out some colors!
+TYPE echo trying out some colors!
 ENTER
 DELAY 500
 LED R
@@ -20,5 +20,5 @@ LED M
 DELAY 500
 LED W
 DELAY 1000
-STRING done!
+TYPE done!
 ENTER
