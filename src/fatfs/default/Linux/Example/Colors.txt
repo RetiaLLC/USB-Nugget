@@ -1,6 +1,6 @@
 CTRL ALT T
 DELAY 1000
-STRING echo testing out some colors!
+TYPE echo testing out some colors!
 ENTER
 DELAY 500
 LED R
@@ -17,5 +17,5 @@ LED M
 DELAY 500
 LED W
 DELAY 1000
-STRING done!
+TYPE done!
 ENTER
