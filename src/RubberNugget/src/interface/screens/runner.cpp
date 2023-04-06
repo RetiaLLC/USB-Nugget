@@ -86,18 +86,20 @@ void pressNamedKey(String keyPress, uint8_t modifiers) {
   }
 }
 
+void resetPayloadScreen(SH1106Wire* display) {
+  display->clear();
+  display->drawLine(0, 54, 127, 54);
+  display->drawLine(0, 53, 127, 53);
+  display->drawString(0, 54, "RUNNING PAYLOAD");
+  display->display();
+}
+
 void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* strip) {
   uint16_t defaultDelay = 10;
   String tCommand = ducky.substring(0, ducky.indexOf(' ')); // get command
   tCommand.toUpperCase(); tCommand.trim();
   const KEYMAP* keymap = keyboard.getKeymap();
 
-  display->clear();
-  display->drawLine(0, 54, 127, 54);
-  display->drawLine(0, 53, 127, 53);
-  display->drawString(0, 54, "RUNNING PAYLOAD");
-  display->display();
-  
   if (tCommand.equals("//")) {
     Serial.println("Comment");
   }
@@ -123,23 +125,26 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
         Serial.printf("cannot find keyset for: %s\n", locale);
     }
   }
-  else if (tCommand.equals("DELAY")) {
-    display->drawString(3,12,"DELAY: ");
-    display->drawString(3,22,(String) ducky.substring(ducky.indexOf(' ')+1, ducky.length()));
-    display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
-    display->display();
+  else if (tCommand.equals("WAIT")) {
     delay(ducky.substring(ducky.indexOf(' ')+1, ducky.length()).toInt()); // delay in MS
     Serial.println("Delayed!");       
   }
-  else if (tCommand.equals("DEFAULT_DELAY") or tCommand.equals("DEFAULTDELAY")) {
-    display->drawString(3,12,"DEFAULT");
-    display->drawString(3,22,"DELAY:");
-    display->drawString(3,32,(String) ducky.substring(ducky.indexOf(' ')+1, ducky.length()));
-    display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
-    display->display();
+  else if (tCommand.equals("DEFAULT_WAIT") or tCommand.equals("DEFAULTWAIT")) {
     defaultDelay = ducky.substring(ducky.indexOf(' ')+1, ducky.length()).toInt();
   }
+  else if (tCommand.equals("SCREEN")) {
+    resetPayloadScreen(display);
+    if (String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())).length() > 9) {
+      display->drawString(3,22,String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())).substring(0,10)+"...");
+    }
+    else {
+      display->drawString(3,22,String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())));
+    }
+    display->drawXbm(0, 0, 128, 64, cat_with_one_exclamation_point_image_bits);
+    display->display();
+  }
   else if (tCommand.equals("LED")) {
+    resetPayloadScreen(display);
     display->drawString(3,12,"COLOR:");
     display->drawString(3,22,(String) ducky.substring(ducky.indexOf(' ')+1, ducky.length())); // accept single color parameter
     display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
@@ -169,9 +174,10 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
     strip->show(); strip->show();
   }
   else if (tCommand.equals("TYPE")) {
+    resetPayloadScreen(display);
     display->drawString(3,12,"TYPE: ");
-    if (String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())).length() > 11) {
-      display->drawString(3,22,String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())).substring(0,8)+"...");
+    if (String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())).length() > 9) {
+      display->drawString(3,22,String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())).substring(0,10)+"...");
     }
     else {
       display->drawString(3,22,String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())));
@@ -183,6 +189,7 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
   }  
   
   else if (keyKnown(tCommand)) {
+    resetPayloadScreen(display);
     display->drawString(3,12,"KEY PRESS");
     ducky.trim(); // remove leading, trailing whitespace
     int currentTokenLeftIndex = 0;
