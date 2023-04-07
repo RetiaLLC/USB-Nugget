@@ -16,7 +16,6 @@ A versatile USB attack platform that lets you hack computers in seconds using a 
 
 ## Creating Payloads
 To upload a payload, you can save a `.txt` file to the USB Nugget flash drive.  Payloads must be saved under an operating system, then category type. (OS->Category->Payload.txt)
-
 ## Accessing the Web Interface
 
 You can create, edit and deploy payloads from the web interface.
@@ -58,6 +57,12 @@ TYPE firefox
 // wait 2000 milliseconds (one second) for firefox to open
 WAIT 2000
 ...
+```
+
+The `SCREEN` command outputs text to the screen.
+```
+SCREEN this is some information
+DELAY 1000
 ```
 
 The `LED` command changes the color of the NeoPixel LED. Use with one of the following color options
