@@ -53,7 +53,7 @@ void runPayload(String payload, SH1106Wire* display, Adafruit_NeoPixel* strip) {
           processDuckyScript(command, display, strip);
           command = "";
         }
-        command+=payload[i];
+        command += payload[i];
     }
     processDuckyScript(command, display, strip);
     display->clear();
@@ -68,7 +68,7 @@ void runPayload(String payload, SH1106Wire* display, Adafruit_NeoPixel* strip) {
 bool keyKnown(String keyPress) {
   Serial.print("looking for: ");
   Serial.println(keyPress);
-  for (int i=0; i< (sizeof(keyMapRN)/sizeof(keyMapRN[0])); i++) {
+  for (int i=0; i < (sizeof(keyMapRN)/sizeof(keyMapRN[0])); i++) {
     if (keyPress.equals(keyMapRN[i].title)) {
       Serial.print(keyMapRN[i].title);
       Serial.println(" found!");
@@ -172,6 +172,28 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
       strip->setPixelColor(0, strip->Color(120,120, 120));
     }
     strip->show(); strip->show();
+  }
+  else if (tCommand.equals("LED+RGB")) {
+    display->drawString(3,12,"COLOR:");
+    display->drawString(3,22,(String) ducky.substring(8, ducky.length())); //accept rgb colorcodes as xxx xxx xxx
+    display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
+    display->display();
+      
+    uint32_t color = strip->Color(ducky.substring(8,10), ducky.substring(12,14), ducky.substring(16,18));
+    strip->setPixelColor(0, color)
+    strip->show();
+  }
+  else if (tCommand.equals("LED+HSV")) { //accept hsv colorcodes as xxxxx xxx xxx
+    /*
+    Someone can make this work latter, maybe me, not now
+    display->drawString(3,12,"COLOR:");
+    display->drawString(3,22,""); 
+    */
+    display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
+    display->display();
+    uint32_t color = strip->gamma32(strip->ColorHSV(ducky.substring(8,12), ducky.substring(14,16), ducky.substring(18,20)));
+    strip->setPixelColor(0, color)
+    strip->show();
   }
   else if (tCommand.equals("TYPE")) {
     resetPayloadScreen(display);
