@@ -179,8 +179,8 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
     display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
     display->display();
       
-    uint32_t color = strip->Color(ducky.substring(9,12), ducky.substring(13,16), ducky.substring(17,20));
-    strip->setPixelColor(0, color)
+    uint32_t color = strip->Color(ducky.substring(9,12).toInt(), ducky.substring(13,16).toInt(), ducky.substring(17,20).toInt());
+    strip->setPixelColor(0, color);
     strip->show();
   }
   else if (tCommand.equals("LED+HSV")) { //accept hsv colorcodes as xxxxx xxx xxx
@@ -191,8 +191,8 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
     */
     display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
     display->display();
-    uint32_t color = strip->gamma32(strip->ColorHSV(ducky.substring(9,14), ducky.substring(15,17), ducky.substring(18,21)));
-    strip->setPixelColor(0, color)
+    uint32_t color = strip->gamma32(strip->ColorHSV(ducky.substring(9,14).toInt(), ducky.substring(15,17).toInt(), ducky.substring(18,21).toInt()));
+    strip->setPixelColor(0, color);
     strip->show();
   }
   else if (tCommand.equals("TYPE")) {
