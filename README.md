@@ -89,28 +89,28 @@ LED M
 LED W
 ```
 
-The `LED+RGB` command allows you to use RGB values to set the LED color. The values should be 3 digit groups seperated with spaces.
+The `LED+RGB` command allows you to use RGB values to set the LED color. The values should be a set of 3 three digit numbers up to 255 seperated with spaces.
 ```
 //RED
-LED+RGB 256 000 000
+LED+RGB 255 000 000
 
 //GREEN
-LED+RGB 000 256 000
+LED+RGB 000 255 000
 
 //BLUE
-LED+RGB 000 000 256
+LED+RGB 000 000 255
 ```
 
-The `LED+HSV` command allows you to use HSV values to set the LED color. The values should be 3 groups seperated with spaces, 5 digits for hue, 3 digits for saturation, and 3 digits for value aka brightness.
+The `LED+HSV` command allows you to use HSV values to set the LED color. The values should be 3 groups seperated with spaces, 5 digits for hue, 3 digits for saturation up to 255, and 3 digits for value aka brightness(also up to 255).
 ```
 //RED
-LED+HSV 256 000 000
+LED+HSV 00000 255 255
 
 //GREEN
-LED+HSV 000 256 000
+LED+HSV 21845 255 255
 
 //BLUE
-LED+HSV 000 000 256
+LED+HSV 43691 255 255
 ```
 
 You can use `LOCALE` to change the active keyboard layout. Currently, English (`EN`), Dutch(`DE`), Spanish (`ES`), French (`FR`), and Portuguese (`PT`) are supported.
