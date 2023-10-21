@@ -174,26 +174,28 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
     strip->show(); strip->show();
   }
   else if (tCommand.equals("LED+RGB")) {
+    resetPayloadScreen(display);
     display->drawString(3,12,"COLOR:");
-    display->drawString(3,22,(String) ducky.substring(9, ducky.length())); //accept rgb colorcodes as xxx xxx xxx
+    display->drawString(3,22,(String) ducky.substring(8, ducky.length())); //accept grb colorcodes as LED+RGB xxx xxx xxx
     display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
     display->display();
       
-    uint32_t color = strip->Color(ducky.substring(9,12).toInt(), ducky.substring(13,16).toInt(), ducky.substring(17,20).toInt());
+    uint32_t color = strip->Color(ducky.substring(13,16).toInt(), ducky.substring(9,12).toInt(), ducky.substring(17,20).toInt());
     strip->setPixelColor(0, color);
     strip->show();
   }
-  else if (tCommand.equals("LED+HSV")) { //accept hsv colorcodes as xxxxx xxx xxx
-    /*
-    Someone can make this work latter, maybe me, not now
+  else if (tCommand.equals("LED+HSV")) { //accept hsv colorcodes as LED+HSV xxxxx xxx xxx
+    resetPayloadScreen(display);
     display->drawString(3,12,"COLOR:");
-    display->drawString(3,22,""); 
-    */
+    display->drawString(3,22,(String) ducky.substring(8,21)); //eventually want to replace this with color matching
     display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
     display->display();
-    uint32_t color = strip->gamma32(strip->ColorHSV(ducky.substring(9,14).toInt(), ducky.substring(15,17).toInt(), ducky.substring(18,21).toInt()));
+    
+    uint32_t rgbcolor = strip->gamma32(strip->ColorHSV(ducky.substring(9,14).toInt(), ducky.substring(15,18).toInt(), ducky.substring(19,22).toInt()));
+    uint32_t color = (((rgbcolor >> 24) & 0xFF) << 24) | (((rgbcolor >> 8) & 0xFF) << 16) | (((rgbcolor >> 16) & 0xFF) << 8) | (rgbcolor & 0xFF);
+
     strip->setPixelColor(0, color);
-    strip->show();
+    strip->show(); strip->show();
   }
   else if (tCommand.equals("TYPE")) {
     resetPayloadScreen(display);
