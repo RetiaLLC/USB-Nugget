@@ -78,7 +78,7 @@ bool keyKnown(String keyPress) {
   return false;
 }
 
-void pressNamedKey(String keyPress, uint8_t modifiers) {
+void pressNamedKey(String keyPress, uint8_t modifiers) { //sends keystrokes to target
   for (int i=0; i< (sizeof(keyMapRN)/sizeof(keyMapRN[0])); i++) {
     if (keyPress.equals(keyMapRN[i].title)) {
       keyboard.sendPress(keyMapRN[i].key, modifiers);
@@ -93,6 +93,28 @@ void resetPayloadScreen(SH1106Wire* display) {
   display->drawString(0, 54, "RUNNING PAYLOAD");
   display->display();
 }
+bool boundsChecking(String ducky, String tCommand, int op_length, SH1106Wire* display) {  //TODO: rewrite to use dict for each func & check compliance at top of proccess_ducky_script for better readablity
+
+  String options = ducky.substring(tCommand.length()+ 1,ducky.length()+1);
+  display->clear();
+  if(options.length() > op_length) {
+    Serial.println("Incorect Formating: Long");
+    display->drawString(3,12,"Options Too Long");
+    display->display();
+    delay(200);
+    return true;
+  }
+  else if (options.length() < op_length) {
+    Serial.println("Incorect Formating: Short");
+    display->drawString(3,12,"Options Too Short");
+    display->display();
+    delay(200);
+    return true;
+  }  
+  else {
+    return false;
+  } 
+}
 
 void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* strip) {
   uint16_t defaultDelay = 10;
@@ -103,7 +125,8 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
   if (tCommand.equals("//")) {
     Serial.println("Comment");
   }
-  else if (tCommand.equals("LOCALE")) {
+  else if (tCommand.equals("LOCALE")) {       //sets keymap lang
+    if (boundsChecking(ducky, tCommand, 3, display)) {} else {
     String locale = ducky.substring(ducky.indexOf(' ')+1, ducky.length());
     Serial.printf("Locale:[%s]\n", locale);
     if (locale == "EN") {
@@ -124,15 +147,16 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
     else {
         Serial.printf("cannot find keyset for: %s\n", locale);
     }
+    }
   }
-  else if (tCommand.equals("WAIT")) {
-    delay(ducky.substring(ducky.indexOf(' ')+1, ducky.length()).toInt()); // delay in MS
+  else if (tCommand.equals("WAIT")) {     //delays script
+    delay(ducky.substring(ducky.indexOf(' ')+1, ducky.length()).toInt()); //delay in MS
     Serial.println("Delayed!");       
   }
-  else if (tCommand.equals("DEFAULT_WAIT") or tCommand.equals("DEFAULTWAIT")) {
+  else if (tCommand.equals("DEFAULT_WAIT") or tCommand.equals("DEFAULTWAIT")) {   //sets default delay
     defaultDelay = ducky.substring(ducky.indexOf(' ')+1, ducky.length()).toInt();
   }
-  else if (tCommand.equals("SCREEN")) {
+  else if (tCommand.equals("SCREEN")) {    //prints text to the screen
     resetPayloadScreen(display);
     if (String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())).length() > 9) {
       display->drawString(3,22,String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())).substring(0,10)+"...");
@@ -143,16 +167,17 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
     display->drawXbm(0, 0, 128, 64, cat_with_one_exclamation_point_image_bits);
     display->display();
   }
-  else if (tCommand.equals("LED")) {
+  else if (tCommand.equals("LED")) {      //sets neopixel color
     resetPayloadScreen(display);
+    if (boundsChecking(ducky, tCommand, 2, display)) {} else {
     display->drawString(3,12,"COLOR:");
-    display->drawString(3,22,(String) ducky.substring(ducky.indexOf(' ')+1, ducky.length())); // accept single color parameter
+    display->drawString(3,22,(String) ducky.substring(ducky.indexOf(' ')+1, ducky.length())); //accept single color parameter
     display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
     display->display();
     String color = (String) ducky.substring(ducky.indexOf(' ')+1, ducky.length());
     color.toUpperCase();
     
-    if (color.equals("R")) { strip->setPixelColor(0, strip->Color(255,0, 0)); }
+    if (color.equals("R")) { strip->setPixelColor(0, strip->Color(255,0, 0)); }    //TODO: may be better to replace with switch at some point
     else if (color.equals("G")) {
       strip->setPixelColor(0, strip->Color(0,255, 0));
     }
@@ -172,32 +197,37 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
       strip->setPixelColor(0, strip->Color(120,120, 120));
     }
     strip->show(); strip->show();
+    }
   }
-  else if (tCommand.equals("LED+RGB")) {
+  else if (tCommand.equals("LED+RGB")) {  //accept grb colorcodes as LED+RGB xxx xxx xxx
     resetPayloadScreen(display);
+    if (boundsChecking(ducky, tCommand, 12, display)) {} else {
     display->drawString(3,12,"COLOR:");
-    display->drawString(3,22,(String) ducky.substring(8, ducky.length())); //accept grb colorcodes as LED+RGB xxx xxx xxx
+    display->drawString(3,22,(String) ducky.substring(8, ducky.length())); 
     display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
     display->display();
       
-    uint32_t color = strip->Color(ducky.substring(13,16).toInt(), ducky.substring(9,12).toInt(), ducky.substring(17,20).toInt());
+    uint32_t color = strip->Color(ducky.substring(13,16).toInt(), ducky.substring(9,12).toInt(), ducky.substring(17,20).toInt()); //extracts color
     strip->setPixelColor(0, color);
     strip->show();
+    }
   }
   else if (tCommand.equals("LED+HSV")) { //accept hsv colorcodes as LED+HSV xxxxx xxx xxx
     resetPayloadScreen(display);
+    if (boundsChecking(ducky, tCommand, 14, display)) {} else {
     display->drawString(3,12,"COLOR:");
-    display->drawString(3,22,(String) ducky.substring(8,21)); //eventually want to replace this with color matching
+    display->drawString(3,22,(String) ducky.substring(8,21));     //TODO: replace this with color matching
     display->drawXbm(0, 0, 128, 64, cat_with_reload_spinner_image_bits);
     display->display();
     
-    uint32_t rgbcolor = strip->gamma32(strip->ColorHSV(ducky.substring(9,14).toInt(), ducky.substring(15,18).toInt(), ducky.substring(19,22).toInt()));
-    uint32_t color = (((rgbcolor >> 24) & 0xFF) << 24) | (((rgbcolor >> 8) & 0xFF) << 16) | (((rgbcolor >> 16) & 0xFF) << 8) | (rgbcolor & 0xFF);
+    uint32_t rgbcolor = strip->gamma32(strip->ColorHSV(ducky.substring(9,14).toInt(), ducky.substring(15,18).toInt(), ducky.substring(19,22).toInt())); //extracts hsv color  and processes
+    uint32_t color = (((rgbcolor >> 24) & 0xFF) << 24) | (((rgbcolor >> 8) & 0xFF) << 16) | (((rgbcolor >> 16) & 0xFF) << 8) | (rgbcolor & 0xFF);  //converts packed wrgb to packed wgrb
 
     strip->setPixelColor(0, color);
     strip->show(); strip->show();
+    }
   }
-  else if (tCommand.equals("TYPE")) {
+  else if (tCommand.equals("TYPE")) {  //types strings to target
     resetPayloadScreen(display);
     display->drawString(3,12,"TYPE: ");
     if (String(ducky.substring(ducky.indexOf(' ')+1, ducky.length())).length() > 9) {
