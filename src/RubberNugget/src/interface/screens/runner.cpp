@@ -43,7 +43,7 @@ bool ScriptRunnerScreen::draw() {
 
 void runPayload(String payload, SH1106Wire* display, Adafruit_NeoPixel* strip) {
     strip->setPixelColor(0, strip->Color(255,0, 0));
-    strip->show(); strip->show(); strip->show();
+    strip->show();
 
     String command;
 
@@ -62,7 +62,7 @@ void runPayload(String payload, SH1106Wire* display, Adafruit_NeoPixel* strip) {
     display->drawXbm(0, 0, 128, 64, cat_with_exclamation_points_image_bits);
     display->display();
     strip->setPixelColor(0, strip->Color(0,0, 0));
-    strip->show(); strip->show();
+    strip->show();
 }
 
 bool keyKnown(String keyPress) {
@@ -196,7 +196,7 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
      else if (color.equals("W")) {
       strip->setPixelColor(0, strip->Color(120,120, 120));
     }
-    strip->show(); strip->show();
+    strip->show();
     }
   }
   else if (tCommand.equals("LED+RGB")) {  //accept grb colorcodes as LED+RGB xxx xxx xxx
@@ -224,7 +224,7 @@ void processDuckyScript(String ducky, SH1106Wire* display, Adafruit_NeoPixel* st
     uint32_t color = (((rgbcolor >> 24) & 0xFF) << 24) | (((rgbcolor >> 8) & 0xFF) << 16) | (((rgbcolor >> 16) & 0xFF) << 8) | (rgbcolor & 0xFF);  //converts packed wrgb to packed wgrb
 
     strip->setPixelColor(0, color);
-    strip->show(); strip->show();
+    strip->show();
     }
   }
   else if (tCommand.equals("TYPE")) {  //types strings to target
