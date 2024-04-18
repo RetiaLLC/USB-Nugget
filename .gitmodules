@@ -1,6 +1,6 @@
 [submodule "src/third_party/EspTinyUSB"]
 	path = src/third_party/EspTinyUSB
-	url = https://github.com/HakCat-Tech/EspTinyUSB.git
+	url = git@github.com:RetiaLLC/EspTinyUSB.git
 	branch = international-keyboard-support
 [submodule "src/third_party/arduino_base64"]
 	path = src/third_party/arduino_base64
