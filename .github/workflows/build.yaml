@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - with:
+        repository: RetiaLLC/EspTinyUSB
+        token: ${{ ESP_TINY_USB_PRIVATE_SSH_KEY }}
     - name: Build the Docker image
       run: |
         cd src
