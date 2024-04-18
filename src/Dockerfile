@@ -22,7 +22,8 @@ RUN ./arduino-cli core update-index --config-file arduino-cli.yaml
 RUN ./arduino-cli core install esp32:esp32@3.0.0-alpha3
 RUN ./arduino-cli lib install \
     "ESP8266 and ESP32 OLED driver for SSD1306 displays" \
-    "Adafruit NeoPixel"
+    "Adafruit NeoPixel" \
+    "Lora"
 COPY third_party ./third_party
 RUN ./third_party/arduino_cli_install.sh $(readlink -f ./arduino-cli)
 
