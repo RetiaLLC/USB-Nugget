@@ -19,10 +19,10 @@ NuggetLora::NuggetLora() {
 
 }
 
-// NuggetLora::initSPI(void) {
-//     SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
+void NuggetLora::initSPI() {
+    SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
 
-// }
+}
 
 
 bool NuggetLora::testForRFM(void) {

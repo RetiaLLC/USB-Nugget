@@ -213,6 +213,9 @@ NuggetConfig getConfig() {
   conf.password = "nugget123";
   conf.pid = 0x20b;
   conf.vid = 0x05ac;
+  conf.lora_module_type = RFM95;
+  conf.lora_RFM_syncword = 0xF3;
+
 
   fileOp configRead = readFile(".usbnugget.conf");
   if (!configRead.ok) {
@@ -261,6 +264,19 @@ NuggetConfig getConfig() {
         strcpy(hex, currentLineKeyValue.c_str());
         char* ptr;
         conf.vid = strtoul(hex, &ptr, 16);
+    }
+    if (currentLine.indexOf("lora_module= \"") == 0) {
+        if (strcmp(currentLineKeyValue.c_str(), "RFM95") == 0)
+          conf.lora_module_type = RFM95;
+        else if (strcmp(currentLineKeyValue.c_str(), "RYLR998") == 0)
+          conf.lora_module_type = RYLR998;
+
+    }
+    if (currentLine.indexOf("lora_RFM_syncword = \"") == 0) {
+        char hex[currentLineKeyValue.length() + 1];
+        strcpy(hex, currentLineKeyValue.c_str());
+        char* ptr;
+        conf.lora_RFM_syncword = strtoul(hex, &ptr, 16);
     }
 nextLine:
     // update line

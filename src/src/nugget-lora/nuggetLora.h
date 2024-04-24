@@ -28,7 +28,8 @@
 
 
 // NUGGET LORA COMMUNICTION CONFIGURATION
-#define LORA_SYNCWORD 0xF3
+//#define LORA_SYNCWORD 0xF3
+// defined in .usbnugget.conf
 
 /* communication modes for nugget-nugget communication 
  * NUG_COMM_MODE_BASIC - basic controls using buttons, like HID injection
