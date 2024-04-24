@@ -1,0 +1,1 @@
+# simple script to handle first flash of nugget

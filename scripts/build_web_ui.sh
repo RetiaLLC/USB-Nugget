@@ -16,7 +16,7 @@ fileToProgmem() {
         | sed -E 's/(.*0x..$.*)/\1, 0x00/g' # add null terminator
 }
 
-for file in $(find ../RubberNugget/webUI -type f); do
+for file in $(find ../src/webUI -type f); do
     [ -e "$file" ] || { echo "invalid file $file" && exit 1; }
     fileName=$(basename $file)
     fileName="${fileName%%.*}"

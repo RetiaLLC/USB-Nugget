@@ -14,7 +14,7 @@ HIDkeyboard keyboard;
 CDCusb CDCUSBSerial;
 FlashUSB fat1;
 
-char *l1 = "ffat";
+const char *l1 = "ffat";
 String payloadPath = "";
 
 /*-----------------------------------------------------------------*/

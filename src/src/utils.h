@@ -1,7 +1,8 @@
 #pragma once
 #include "Arduino.h"
 #include <base64.h>
-#include "base64.hpp"
+// #include "base64.hpp"
+#include "arduino_base64.hpp"
 #include "cdcusb.h"
 #include "mscusb.h"
 #include "flashdisk.h"

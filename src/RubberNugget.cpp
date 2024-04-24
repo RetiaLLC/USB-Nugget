@@ -2,7 +2,7 @@
 #include "src/RubberNugget.h"
 #include "Arduino.h"
 #include <base64.h>
-#include "base64.hpp"
+#include "arduino_base64.hpp"
 
 #include <WiFiClient.h>
 #include <WebServer.h>

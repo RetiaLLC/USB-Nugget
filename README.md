@@ -1,3 +1,14 @@
+## USB Nugget PlatformIO Firwmare
+
+"normal" part of firmware compiles, now all we need to do is port all of the special sauce over to platform-independent methods. 
+
+The following need to be converted to python scripts inside of ./scripts/:
+* generate_fs.sh
+* RESET_SCRIPTS_DURING_FLASH -> reset-scripts-during-flash.py (needs to be written)
+* makefile generate_bin
+    * this should be able to be ported to a partition map, which is the way you're supposed to do this. 
+* 
+
 # **USB Nugget**: Cat-Themed USB Attacks
 A versatile USB attack platform that lets you hack computers in seconds using a [USB Nugget](https://usbnugget.com)!  
 

@@ -149,6 +149,7 @@ bool NuggetInterface::injectScreen(NuggetScreen* screen){
   //this->draw();
   //this->currentScreenNode->screen->update(EVENT_INIT);
   xSemaphoreGive(this->screenLock);
+  return true;
 }
 
 bool NuggetInterface::pushScreen(NuggetScreen* screen){
