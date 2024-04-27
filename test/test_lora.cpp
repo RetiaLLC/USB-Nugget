@@ -6,6 +6,7 @@
 */
 
 String STR_TO_TEST;
+global_nugget_conf;
 
 void setUp(void) {
     // set stuff up here
@@ -44,7 +45,7 @@ void setup()
     delay(2000); // service delay
     UNITY_BEGIN();
 
-    RUN_TEST(test_string_concat);
+    RUN_TEST(test_RFM_SPI_bus_read);
     RUN_TEST(test_string_substring);
 
     UNITY_END(); // stop unit testing

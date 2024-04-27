@@ -1,29 +1,26 @@
 #pragma once
+#ifndef RUBBERNUGGET_H
+#define RUBBERNUGGET_H
 
 #include "Arduino.h"
 #include "cdcusb.h"
 #include "mscusb.h"
 #include "flashdisk.h"
+#include "nuggetLora/nuggetLora.h"
+#include "nuggetConf.h"
 
-enum LoraModuleType {RFM95, RYLR998};
+
 
 class RubberNugget {
   public:
-    RubberNugget();
+    RubberNugget(){};
     static void init();
     static String* allPayloadPaths(const char* path="/");
 };
 
-struct NuggetConfig {
-  String locale;
-  String network;
-  String password;
-  long pid;
-  long vid;
-  uint8_t lora_module_type;
-  int lora_RFM_syncword;
-
-};
 
 FILINFO* newFileList(const char* path, int& numFiles);
 NuggetConfig getConfig();
+
+
+#endif
