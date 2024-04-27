@@ -229,15 +229,3 @@ void onReceive(int packetSize) {
 
 
 
-
-/**
- * Sanity check lora components of NuggetConfig
-*/
-bool NuggetLora::validateLoraConf(NuggetConfig c) {
-
-  return true;
-}
-
-
-
-

@@ -3,22 +3,41 @@
 #include <vfs_api.h>
 #include <LoRa.h>
 
+#include "nuggetConf.h"
 #include "src/nuggetLora/nuggetLora.h"
+#include "src/RubberNugget.h"
 
 /**
  * Unit test nuggetLora component
+ * 
+ * ALL TESTS ARE HARDWARE-ONLY, DID NOT HAVE TIME TO BUILD MOCKING FRAMEWORK
 */
+String STR_TO_TEST = "TEST STR";
+NuggetConfig default_conf = {
+        .locale = "EN",
+        .network = "Nugget AP",
+        .password = "nugget123",
+        .pid = 0x20b,
+        .vid = 0x05ac,
+        .lora_enabled = false,
+        .lora_module_type = RFM95,
+        .lora_addr = 0x01,
+        .lora_RFM_syncword = 0xF3,
+    };
+// NuggetLora nugLora(default_conf);
 
-String STR_TO_TEST;
+NuggetLora nugLora(default_conf);
 
 void setUp(void) {
     // set stuff up here
-    STR_TO_TEST = "Hello, world!";
+
+
+    // nugLora = NuggetLora(default_conf);
+    // NuggetLora nugLora(default_conf);
 }
 
 void tearDown(void) {
     // clean stuff up here
-    STR_TO_TEST = "";
 }
 
 
@@ -27,16 +46,11 @@ void tearDown(void) {
  * of RFM95 module
  * MUST BE RUN ON HARDWARE, MOCK NOT PRESENT
 */
-void test_RFM_SPI_bus_read(void) {
-    // TEST_ASSERT_TRUE_MESSAGE(testForRFM(), "Failed to detect RFM95 on SPI bus");
+void test_detectRFMModule(void) {
+    TEST_ASSERT_TRUE_MESSAGE(nugLora.initModule(), "Failed to detect RFM95 on SPI bus");
 
 }
 
-void test_string_concat(void) {
-    String hello = "Hello, ";
-    String world = "world!";
-    TEST_ASSERT_EQUAL_STRING(STR_TO_TEST.c_str(), (hello + world).c_str());
-}
 
 void test_string_substring(void) {
     TEST_ASSERT_EQUAL_STRING("Hello", STR_TO_TEST.substring(0, 5).c_str());
@@ -45,11 +59,13 @@ void test_string_substring(void) {
 
 void setup()
 {
+    Serial.begin(115200);
+
     delay(2000); // service delay
     UNITY_BEGIN();
 
-    RUN_TEST(test_RFM_SPI_bus_read);
-    RUN_TEST(test_string_substring);
+    RUN_TEST(test_detectRFMModule);
+    // RUN_TEST(test_string_substring);
 
     UNITY_END(); // stop unit testing
 }

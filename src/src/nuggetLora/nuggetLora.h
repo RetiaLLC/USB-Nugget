@@ -102,13 +102,13 @@ typedef struct NuggetLoraPacket {
 class NuggetLora {
   public: 
     NuggetLora(NuggetConfig conf);
-    void initSPI(void);
-    bool lora_recv_cb();
 
+    bool initModule(void);
+
+    bool lora_recv_cb();
 
     void tx_lora_packet(const NuggetLoraPacket *packet, uint16_t size_b);
 
-    bool initModule(void);
 
     void sendBasicModePacket(const uint8_t dest_addr[2], \
       const uint8_t payload_size_b, const char *payload);
@@ -118,7 +118,6 @@ class NuggetLora {
     // internal functions
     uint8_t readLoraReg(uint8_t address);
     void lora_packet_recv_cb(void *packetData);
-    bool validateLoraConf(NuggetConfig c);
 
     // internal variables
 
