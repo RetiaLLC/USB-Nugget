@@ -1,3 +1,4 @@
 {
-    "idf.flashType": "UART"
+    "idf.flashType": "UART",
+    "C_Cpp.default.compilerPath": "/home/jmux/.platformio/packages/toolchain-xtensa-esp32s2@8.4.0+2021r2-patch5/bin/xtensa-esp32s2-elf-gcc"
 }

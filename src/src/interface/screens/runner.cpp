@@ -3,7 +3,7 @@
 #include "hidkeyboard.h"
 
 #include "../../RubberNugget.h"
-#include "../../../keyboardlayout.h"
+#include "keyboardlayout.h"
 #include "../graphics.h"
 
 extern HIDkeyboard keyboard; //TODO: remove this
