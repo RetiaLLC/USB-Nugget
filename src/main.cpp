@@ -13,7 +13,7 @@
 #include "src/interface/screens/splash.h"
 #include "src/interface/screens/dir.h"
 #include "src/interface/screens/runner.h"
-#include "src/interface/lib/NuggetInterface.h"
+#include "NuggetInterface.h"
 
 const char *ssid = "Nugget AP";
 const char *password = "nugget123";

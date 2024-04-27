@@ -7,7 +7,7 @@
 #include "mscusb.h"
 #include "flashdisk.h"
 
-#include "../lib/NuggetInterface.h"
+#include "NuggetInterface.h"
 #include "runner.h"
 
 

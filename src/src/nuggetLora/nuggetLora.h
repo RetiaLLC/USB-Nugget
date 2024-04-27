@@ -12,7 +12,7 @@
  * 
 */
 
-#include "SPI.h"
+#include <SPI.h>
 #include "LoRa.h"
 #include "nuggetConf.h"
 // see nuggetConf for enum LoraModuleType

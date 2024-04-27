@@ -1,7 +1,7 @@
 #ifndef SCRIPT_RUNNER_SCREEN_H
 #define SCRIPT_RUNNER_SCREEN_H
 
-#include "../lib/NuggetInterface.h"
+#include "NuggetInterface.h"
 
 
 class ScriptRunnerScreen : public NuggetScreen {

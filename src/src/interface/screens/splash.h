@@ -1,5 +1,7 @@
-#pragma once
-#include "../lib/NuggetInterface.h"
+#ifndef SPASH_H
+#define SPLASH_H
+
+#include "NuggetInterface.h"
 
 class SplashScreen: public NuggetScreen {
 	public:
@@ -10,3 +12,5 @@ class SplashScreen: public NuggetScreen {
 	private:
 		unsigned long endAt;
 };
+
+#endif
