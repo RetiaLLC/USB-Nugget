@@ -30,6 +30,7 @@
 
 #define NUGGET_LORA_VERSION 0.1
 
+// this will be replaced with a real checksum at some point
 
 // NUGGET LORA COMMUNICTION CONFIGURATION
 //#define LORA_SYNCWORD 0xF3
@@ -72,6 +73,8 @@ NUM_LORA_BASIC_CMDS}; // NUM_LORA_BASIC_CMDS must be last, needed to check enum 
 //   char* contents;
 // };
 
+#define NUG_LORA_PKT_VERSION 1
+
 /**
  * Struct representing LoRa packet
  * @param lora_communication_mode nug_comm_mode this packet should be interpreted as
@@ -90,8 +93,8 @@ typedef struct NuggetLoraPacket {
   uint8_t destAddr[2];
   uint8_t srcAddr[2];
   uint8_t seq[2];
-  uint8_t checksum;
   uint8_t payload[0];
+  uint8_t checksum;
 } __attribute__((packed)) NuggetLoraPacket;
 
 
@@ -102,12 +105,13 @@ class NuggetLora {
     void initSPI(void);
     bool lora_recv_cb();
 
-    void sendMessage(byte destAddr, String message);
 
-    void tx_lora_packet(NuggetLoraPacket *packet, uint16_t size_b);
+    void tx_lora_packet(const NuggetLoraPacket *packet, uint16_t size_b);
 
-    bool testForRFM(void);
-    bool testForRYLR(void);
+    bool initModule(void);
+
+    void sendBasicModePacket(const uint8_t dest_addr[2], \
+      const uint8_t payload_size_b, const char *payload);
 
    private: 
     // uint8_t singleTransfer(uint8_t address, uint8_t value);
@@ -117,8 +121,6 @@ class NuggetLora {
     bool validateLoraConf(NuggetConfig c);
 
     // internal variables
-
-    enum LoraModuleType lora_module_type;
 
     uint16_t lora_seq;
     LoRaClass lora;
@@ -131,8 +133,10 @@ class NuggetLora {
  * Holds lora configuration, derived from NuggetConfig options
  * read from .usbnugget.conf
  * @param LoraModuleType enum- RFM95 or RYLR998
- * @param lora_addr byte - local address of lora module
+ * @param lora_addr local address of lora module
  * @param lora_RFM_syncword - lora protocol syncword
+ * @param comm_mode current lora communication mode
+ * @param msg_sequence - stored uint16 message sequence value
  * 
  * @note lora_enabled bool from nuggetConf not present here, since that state is represented
  * by option 0 of LoraCommunicationModes enum
@@ -140,8 +144,12 @@ class NuggetLora {
 typedef struct LoraConfig {
   // bool lora_enabled;
   enum LoraModuleType lora_module_type;
-  byte lora_addr;
+  uint8_t lora_addr[2];
+  uint16_t full_lora_addr;  // store lora_addr both in faster-to-send 8b and full 16b format
+
   int lora_RFM_syncword;
+  enum LoraCommunicationModes comm_mode;
+  uint16_t msg_sequence;
 
 } LoraConfig;
 

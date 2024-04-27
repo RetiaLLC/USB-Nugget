@@ -218,6 +218,8 @@ NuggetConfig getConfig() {
   conf.lora_addr = 0x01;
   conf.lora_RFM_syncword = 0xF3;
 
+  // LORA ADDRESS PARSING IS POSSIBLE ISSUE - NOT SURE CAN HANDLE 2 bytes
+
 
   fileOp configRead = readFile(".usbnugget.conf");
   if (!configRead.ok) {

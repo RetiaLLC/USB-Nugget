@@ -1,5 +1,5 @@
 # simple script to handle first flash of nuggeto
-
+import esptool
 
 #  # Patch to force esptool to use no_reset option. This is necessary because
 #  # arduino-cli does not provide an option to forward this flag. This may become

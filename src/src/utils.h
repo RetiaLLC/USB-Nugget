@@ -1,4 +1,6 @@
-#pragma once
+#ifndef UTILS_H
+#define UTILS_H
+
 #include "Arduino.h"
 #include <base64.h>
 // #include "base64.hpp"
@@ -17,3 +19,5 @@ struct fileOp {
 fileOp saveFile(String path, String contents);
 fileOp readFile(String path);
 fileOp base64Decode(String encoded);
+
+#endif

@@ -1,4 +1,3 @@
-#pragma once
 #ifndef RUBBERNUGGET_H
 #define RUBBERNUGGET_H
 

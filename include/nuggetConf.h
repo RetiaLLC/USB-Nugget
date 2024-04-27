@@ -2,9 +2,11 @@
 #define NUGGET_CONF_H
 
 /**
- * Store NuggetConfiguration data and other types that 
- * must be included across project
+ * Global nugget configuration types imported across project
 */
+
+// will be def'd by platformio.ini later on
+#define DEBUG_LORA 1
 
 // LoraModule type - we suppert RFM95 and RYLR998
 enum LoraModuleType {RFM95, RYLR998};
@@ -31,7 +33,7 @@ typedef struct NuggetConfig {
   // Nugget LoRa configuration options
   bool lora_enabled;
   enum LoraModuleType lora_module_type;
-  byte lora_addr;
+  uint16_t lora_addr;
   int lora_RFM_syncword;
 
 } NuggetConfig;
