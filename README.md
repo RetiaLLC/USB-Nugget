@@ -1,95 +1,117 @@
-# **USB Nugget**: Cat-Themed USB Attacks
-A versatile USB attack platform that lets you hack computers in seconds using a [USB Nugget](https://usbnugget.com)!  
+# 🐱 Bad Nugget — BadUSB for the ESP32-S3 Bluetooth Nugget
 
-<img src="images/USB-Nugget.png"/>
+The **Bad Nugget** is the [HakCat USB Nugget](https://usbnugget.com) / RubberNugget BadUSB firmware
+**ported to the ESP32-S3 "Bluetooth Nugget"** (LOLIN S3 Mini). It's a cat-themed keystroke-injection
+platform — plug it into a computer and it acts as a USB keyboard + mouse — with the ESP32-S3's native
+USB and radio unlocking a wireless remote you don't get on the S2.
 
-## Resources:
-- [USB Nugget Payloads](https://github.com/HakCat-Tech/USB-Nugget-Payloads)  
+It enumerates as a composite **CDC + MSC + HID** device (`05ac:020b`), so it's a keyboard, a mouse, a
+serial control channel, and a small USB drive all at once.
 
-## How to Update your Nugget:
-1.	[Download the latest binary file here](https://github.com/HakCat-Tech/USB-Nugget/releases/)
-2.	Place your Nugget in [Device Firmware Upgrade (DFU) mode]().
-4.	Open our [web flasher tool](https://hakcat-tech.github.io/esp-web-flasher/) in Google Chrome (other browsers not currently supported)
-5.	Click on "Connect" and then select the "ESP32-S2" board. Click "Erase" and "OK" to continue.
-6.	Once you see "Finished", click "Choose a file" and select the .BIN file you downloaded in step one. Click "Program" to flash your Nugget!
-7.	When its done, unplug your Nugget and plug it in again to see the new features. 
+> ⚠️ **Authorized use only.** This is a security-research and red-team training tool. Only use it on
+> systems you own or are explicitly authorized to test. You are responsible for how you use it.
 
-## Creating Payloads
-To upload a payload, you can save a `.txt` file to the USB Nugget flash drive.  Payloads must be saved under an operating system, then category type. (OS->Category->Payload.txt)
-## Accessing the Web Interface
+## What's new on the S3
 
-You can create, edit and deploy payloads from the web interface.
+- **📡 Wireless remote (BLE + USB).** Drive the on-device menus, mirror the OLED live, and manage
+  payloads over **Bluetooth LE** (Nordic UART) or **USB serial** — no cable to a host required. The
+  companion **[Nugget Remote Android app](https://github.com/skickar/nugget-android)** gives you a
+  d-pad, A/B buttons, a live screen view, and a full script editor on your phone.
+- **🔒 Per-device PIN.** BLE control is gated behind a random 6-digit PIN generated on first boot,
+  shown on the Connect screen, and persisted. USB is trusted (physical access). Rotatable in-app.
+- **📝 Remote script manager.** List, read, **write, run, and delete** payloads over BLE or USB —
+  author and fire payloads from your phone.
+- **🧭 OS fingerprinting (`$_OS`).** Detects `WINDOWS` / `MACOS` / `IOS` / `LINUX` / `ANDROID` from the
+  host's USB-enumeration behavior, with a manual override, so one payload can branch per target.
+- **Reliability + UX fixes:** correct `STRING`/`TYPE` typing on slow hosts, `LOOP` auto-close, hold-**B**
+  to abort a running payload, a `WAIT` status screen, and a cleaned-up payload list.
 
-To access the web interface, connect to `Nugget AP` with the password `nugget123`.  In a web browser, navigate to `192.168.4.1` to access the payload deployment system.
+## Flash it
 
-## Updating AP Credentials & Keyboard ID
-To edit your USB Nugget's default AP name & password, edit or create the `.usbnugget.conf` file on your NUGGET drive, and add the following 2 lines:
+**Easiest — browser flasher (Chrome/Edge):** open **[scriptkitty.sh](https://scriptkitty.sh)**, pick
+the **Bad Nugget** card, and click flash. No tools to install.
+
+**Or with esptool** (grab `badnugget-bluetoothnugget-v1.factory.bin` from
+[Releases](https://github.com/RetiaLLC/USB-Nugget/releases)):
+```bash
+esptool --chip esp32s3 write-flash 0x0 badnugget-bluetoothnugget-v1.factory.bin
 ```
-network = "Nugget AP"
+To enter download mode: hold **BOOT**, tap **RESET**, release BOOT. After flashing, unplug/replug.
+
+**Android app:** sideload `app-debug.apk` from the release (or build it from
+[skickar/nugget-android](https://github.com/skickar/nugget-android)).
+
+## Use it
+
+- **On the device:** the d-pad browses payloads; **A** selects/runs, **B** goes back / aborts. The
+  **Connect** screen (press **B** from the list) shows the Wi-Fi AP, `nugget.local`, the **BLE PIN**,
+  and the detected OS.
+- **Over Wi-Fi:** join the `Nugget AP` (password `nugget123`) and open **http://nugget.local** (or
+  `192.168.4.1`) to create/edit/deploy payloads.
+- **Over Bluetooth:** open the Android app, connect **BLE**, enter the PIN shown on the Connect screen,
+  and drive everything wirelessly.
+
+Payloads are plain `.txt` files on the Nugget's USB drive (or written over the remote).
+
+## Scripting (DuckyScript / CatSpeak)
+
+```
+REM comment
+STRING Hello, world!          // type text  (TYPE also works)
+STRINGLN log in               // type + Enter
+GUI r                         // modifier keys: GUI/CMD, CONTROL/CTRL, ALT, SHIFT, ENTER…
+WAIT 2000                     // wait 2000 ms (DELAY is an alias) — shows a WAIT screen now
+DEFAULT_WAIT 20               // delay inserted between every command
+
+LOOP 3                        // repeat the block; auto-closes at end-of-file if no ENDLOOP
+  STRING spam
+  ENTER
+ENDLOOP
+
+IF_OS WINDOWS                 // branch on the detected host ($_OS)
+  GUI r
+  STRING powershell
+ELSE
+  STRING $_OS                 // $_OS expands to WINDOWS/MACOS/IOS/LINUX/ANDROID
+END_IF
+
+SCREEN status text            // draw text on the OLED
+LED R                         // NeoPixel color: R G B C Y M W
+LOCALE ES                     // keyboard layout: EN DE ES FR PT
+MOUSEMOVE 40 0                // move the mouse (dx dy); MOUSECLICK / MOUSESCROLL / JIGGLE too
+```
+
+Hold **B** (or send an abort over the remote) to stop a running payload.
+
+## Config
+
+Create `.usbnugget.conf` on the Nugget drive to change the AP creds / keyboard identity:
+```
+network  = "Nugget AP"
 password = "nugget123"
-```
-To change the VID and PID of the keyboard, you can just add:
-```
-vid = "0x05ac"
-pid = "0x20b"
+vid      = "0x05ac"
+pid      = "0x20b"
 ```
 
-If `.usbnugget.conf` is not present or contains invalid entries, the above
-settings will be used.
+## Build from source
 
-## Nugget Scripting
+This is an ESP32-S3 retarget with a **pinned toolchain** — see **[BUILD-S3.md](BUILD-S3.md)** for the
+full recipe and **[PORT-S2-TO-S3.md](PORT-S2-TO-S3.md)** for the port write-up. In short: the
+`esp32:esp32` Arduino core is pinned to **3.0.0-alpha3** (IDF 5.1 — newer cores drop `hal/usb_hal.h`
+and the build fails), and the USB stack is the patched **[RetiaLLC/EspTinyUSB](https://github.com/RetiaLLC/EspTinyUSB)**
+fork (submodule; install it into your Arduino `libraries/`).
 
-Use `TYPE` to type something in. The following script types "Hello, world!"
-```
-TYPE Hello, world!
-```
-
-You can use modifier keys such as `CONTROL`/`CTRL`, `ALT`, `ENTER`, `COMMAND`, etc.
-```
-CONTROL t
-ALT SHIFT n
-```
-
-Use `WAIT` when you need to wait for something to happen.
-```
-CMD SPACE
-TYPE firefox
-// wait 2000 milliseconds (one second) for firefox to open
-WAIT 2000
-...
+```bash
+git clone --recursive https://github.com/RetiaLLC/USB-Nugget
+# see BUILD-S3.md for the core pin + EspTinyUSB install, then:
+arduino-cli compile --fqbn esp32:esp32:lolin_s3_mini:USBMode=default,PartitionScheme=defaultffat \
+  src/RubberNugget
 ```
 
-The `SCREEN` command outputs text to the screen.
-```
-SCREEN this is some information
-DELAY 1000
-```
+## Credits & license
 
-The `LED` command changes the color of the NeoPixel LED. Use with one of the following color options
-```
-// RED
-LED R
-
-// GREEN
-LED G
-
-// BLUE
-LED B
-
-// CYAN
-LED C
-
-// YELLOW
-LED Y
-
-// MAROON
-LED M
-
-// WHITE
-LED W
-```
-
-You can use `LOCALE` to change the active keyboard layout. Currently, English (`EN`), Dutch(`DE`), Spanish (`ES`), French (`FR`), and Portuguese (`PT`) are supported.
-```
-LOCALE ES
-```
+- Original **USB Nugget / RubberNugget** firmware and hardware by **[HakCat](https://hakcat.com)**
+  ([HakCat-Tech/USB-Nugget](https://github.com/HakCat-Tech/USB-Nugget), MIT). Payload library:
+  [USB-Nugget-Payloads](https://github.com/HakCat-Tech/USB-Nugget-Payloads).
+- ESP32-S3 port, BLE remote, PIN auth, script manager, and OS detection by **Retia**.
+- Licensed **MIT** (see [LICENSE](LICENSE)) — © 2022 HakCat Hardware, with Retia additions.
