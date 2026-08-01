@@ -1,5 +1,7 @@
 #include "NuggetInterface.h"
 #include "dejavu.h"
+#include "../../remote.h"
+#include "../../recovery_fixed.h"   // R2 (corrected): recoveryKick() heartbeat
 
 //----------------------------------------
 // NuggetInputs
@@ -12,6 +14,8 @@ NuggetInputs::NuggetInputs() {
   this->addButton(BTN_DOWN);
   this->addButton(BTN_LEFT);
   this->addButton(BTN_RIGHT);
+  this->addButton(BTN_A);      // A = select/enter (mapped to RIGHT in getInput)
+  this->addButton(BTN_B);      // B = back        (mapped to LEFT  in getInput)
 }
 
 void NuggetInputs::addButton(int pin) {
@@ -21,6 +25,8 @@ void NuggetInputs::addButton(int pin) {
 
 int NuggetInputs::getInput() {
   int buttonState;
+  int qb = remotePopBtn();                 // queued remote press (serial remote-control)
+  if (qb != BTN_NONE) return qb;
   if (this->pressedButton != BTN_NONE){
     buttonState = digitalRead(this->pressedButton);
     if (buttonState==BTN_PRESS){
@@ -35,6 +41,8 @@ int NuggetInputs::getInput() {
     buttonState = digitalRead(btn);
     if (buttonState==BTN_PRESS){
       this->pressedButton = btn;
+      if (btn == BTN_A) return BTN_RIGHT;   // A = select/enter
+      if (btn == BTN_B) return BTN_LEFT;    // B = back
       return btn;
     }
   }
@@ -51,7 +59,7 @@ NuggetScreen::NuggetScreen(){
 }
 NuggetScreen::~NuggetScreen(){
 }
-void NuggetScreen::setDisplay(SH1106Wire* display){
+void NuggetScreen::setDisplay(SSD1306Wire* display){
   this->display = display;
 }
 void NuggetScreen::setInputs(NuggetInputs* inputs){
@@ -81,14 +89,17 @@ int NuggetScreen::_update(){
 //----------------------------------------
 // NuggetInterface
 NuggetInterface::NuggetInterface(){
-  SH1106Wire* nDisplay = new SH1106Wire(0x3C, 33, 35);
+  SSD1306Wire* nDisplay = new SSD1306Wire(0x3C, 35, 36);
+  g_display = nDisplay;                     // expose for the serial remote's screen dump
   this->inputs = new NuggetInputs();
   this->screenLock = xSemaphoreCreateMutex();
   if (this->screenLock == nullptr) {
     Serial.println("[NuggetInterface] mutex could not be created");
   }
   nDisplay->init();
-  nDisplay->flipScreenVertically();
+  // OLED is mounted the same way as every other Nugget firmware (which use U8G2_R2 and
+  // read right-side-up); SSD1306Wire's default already matches, so DON'T flip here.
+  // nDisplay->flipScreenVertically();
   nDisplay->setTextAlignment(TEXT_ALIGN_LEFT);
   nDisplay->setFont(DejaVu_Sans_Mono_10);
   this->display = nDisplay;
@@ -97,6 +108,8 @@ NuggetInterface::NuggetInterface(){
   pinMode(NEOPIXEL_PIN, OUTPUT);
   this->strip = new Adafruit_NeoPixel(NEOPIXEL_PIN_CNT, NEOPIXEL_PIN, NEO_RGB + NEO_KHZ800);
   this->strip->begin();
+  this->strip->setBrightness(NEOPIXEL_BRIGHTNESS);   // dim both ears; full brightness is blinding
+  this->strip->show();                                // apply (clears to off at low brightness)
 }
 
 NuggetInterface::~NuggetInterface(){
@@ -110,6 +123,8 @@ NuggetInterface::~NuggetInterface(){
 
 bool NuggetInterface::start(){
   while (true) {
+    if (g_testHang) { for (;;) { /* deliberate wedge: stop feeding recoveryKick() -> R2 reverts */ } }
+    recoveryKick();   // R2 heartbeat: feed the watchdog; a wedge here -> auto-revert to rescue
     if (xSemaphoreTake(this->screenLock, 0)==pdFALSE) {
       delay(10);
       continue;

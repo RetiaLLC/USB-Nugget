@@ -1,4 +1,5 @@
 #include "dir.h"
+#include "wifi.h"
 #include "../graphics.h"
 #include "../../RubberNugget.h"
 #include "../../utils.h"
@@ -21,6 +22,9 @@ DirScreen::~DirScreen() {
 }
 
 int DirScreen::update(int btn) {
+  if (this->numFiles <= 0 && btn != BTN_LEFT) {
+    return SCREEN_NONE;   // empty dir: ignore select/scroll (would index files[0] on 0 items)
+  }
   switch(btn){
     case BTN_UP:
       if (this->selected != 0) {
@@ -39,6 +43,10 @@ int DirScreen::update(int btn) {
       }
       break;
     case BTN_LEFT:
+      if (this->path == "/") {          // B/LEFT at the root opens the WiFi "Join AP" screen
+        this->pushScreen(new WifiScreen());
+        return SCREEN_PUSH;
+      }
       return SCREEN_BACK;
     case BTN_RIGHT:
       if(files[selected].fattrib & AM_DIR){ // directory; enter it
@@ -82,6 +90,13 @@ int DirScreen::update(int btn) {
 // │/path/items       │  <-- footer
 // └──────────────────┘
 bool DirScreen::draw() {
+  if (this->numFiles <= 0) {   // empty or unreadable drive — render a message, never bail/crash
+    display->drawString(8, 14, "No payloads yet");
+    display->drawString(8, 28, "Add: nugget.local");
+    display->drawLine(0, 53, 127, 53);
+    display->drawString(0, 54, "B = how to connect");
+    return true;
+  }
   if (!files || this->selected >= this->numFiles || (this->top > 0 && this->numFiles < DIR_SCREEN_MAX_SHOWN)) {
     Serial.printf("[displayFiles] condition error: (files:%p)(numFiles:%d)(selected:%d)(top:%d)\n");
     // TODO: display error screen

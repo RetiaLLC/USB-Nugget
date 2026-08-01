@@ -2,3 +2,4 @@
 src/build
 src/scripts/arduino-cli
 src/.arduino15
+dist/

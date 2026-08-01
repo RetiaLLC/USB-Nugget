@@ -161,6 +161,7 @@
             <span class="nav">
                 <a href="#run">SCRIPTS</a>
                 <a href="#create">CREATE</a>
+                <a href="#reference">GUIDE</a>
             </span>
         </header>
         <div id="operationResult"></div>
@@ -175,6 +176,40 @@
             <textarea id="createPayloadContent" rows="10" placeholder="Enter payload"></textarea>
             <button id="createSaveButton">SAVE FILE</button>
             <button id="createRunLiveButton">RUN LIVE</button>
+        </section>
+        <section id="reference">
+            <h2>CATSCRATCH GUIDE</h2>
+            <p>Keystroke, mouse and loop commands. One command per line.</p>
+            <pre style="white-space:pre-wrap;line-height:1.5;">REM or //               comment
+STRING hi   (or TYPE)   type a string
+STRINGLN hi             type a string, then Enter
+&lt;KEY&gt; / CTRL c / GUI r  keys &amp; combos (ENTER TAB ESC F1..)
+DELAY 500   (or WAIT)   pause milliseconds
+LOCALE DE               layout: EN ES DE FR PT
+LED R                   ear colour R G B Y C M W
+SCREEN text             show text on the OLED
+
+MOUSE_MOVE 40 -20       move cursor (x y, any range)
+MOUSE_CLICK L|R|M       click left / right / middle
+MOUSE_DOUBLE            double-click
+MOUSE_SCROLL 3          scroll (negative = down)
+JIGGLE 60               anti-idle wiggle, 60 times
+
+REPEAT 5                repeat the previous line 5x
+LOOP 3                  repeat the block below 3 times
+  STRING spam
+ENDLOOP                 (optional: without it, LOOP
+                         repeats to the end of the file)
+
+IF_OS WINDOWS           run a block only on that OS
+  STRING notepad
+ELSE                    OS = WINDOWS MACOS LINUX
+  STRING gedit
+END_IF
+$_OS                    inserts the detected OS name
+
+Hold B on the Nugget to STOP a running payload.</pre>
+            <button id="loadJigglerButton" onclick="document.getElementById('createPayloadContent').value='// Mouse jiggler\nLOOP 240\n  JIGGLE 1\n  WAIT 2000\nENDLOOP';location.hash='#create';">LOAD JIGGLER PAYLOAD</button>
         </section>
         <section id="confirm-delete">
             <h2>DELETE PAYLOAD?</h2>
@@ -207,6 +242,9 @@
             xhttp.open("GET", "/payloads", false);
             xhttp.send();
 
+            if (!xhttp.responseText) {   // empty filesystem or error: no payloads
+                return []
+            }
             var csv = xhttp.responseText.split(",")
             if(csv[csv.length-1]==''){
                 csv.pop()
@@ -238,12 +276,13 @@
             window.scrollTo(0, 0);
         }
         function savePayload(path, payloadText) {
-            // encode payloadText as base64 and send
+            // base64 the payload, then percent-encode so '+' '/' '=' survive the
+            // urlencoded-form parser intact (a bare '+' would arrive as a space).
             path = pathCorrection(path)
             var xmlHttp = new XMLHttpRequest();
             xmlHttp.open("POST", "savepayload", false);
             xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xmlHttp.send("path="+path+"&payloadText="+btoa(payloadText));
+            xmlHttp.send("path="+encodeURIComponent(path)+"&payloadText="+encodeURIComponent(btoa(payloadText)));
             showResponseResult(xmlHttp, "Success")
             regenerateFileList()
         }
@@ -428,8 +467,14 @@
             window.location.reload()
             window.scrollTo(0, 0);
         }
-        regenerateFileList()
+        // Wire the CREATE buttons FIRST and unconditionally — the payload-list
+        // fetch below must never be able to leave SAVE/RUN LIVE without handlers.
         prepareCreateSection()
+        try {
+            regenerateFileList()
+        } catch (e) {
+            console.error("could not load payload list:", e)
+        }
         console.log("Done")
     </script>
 

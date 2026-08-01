@@ -2,7 +2,7 @@
 #define NUGGET_INTERFACE_H
 
 #include <Adafruit_NeoPixel.h>
-#include "SH1106Wire.h"
+#include "SSD1306Wire.h"
 
 //----------------------------------------
 // NuggetInputs
@@ -11,14 +11,18 @@
 #define BTN_PRESS   0
 #define BTN_NPRESS  1
 
-#define BTN_COUNT  4
-#define BTN_UP     9
+#define BTN_COUNT  6
+#define BTN_UP    13
 #define BTN_DOWN  18
 #define BTN_LEFT  11
-#define BTN_RIGHT  7
+#define BTN_RIGHT 12
+#define BTN_A     44
+#define BTN_B     43
 
-#define NEOPIXEL_PIN 12
-#define NEOPIXEL_PIN_CNT 1
+#define NEOPIXEL_PIN 10
+#define NEOPIXEL_PIN_CNT 2
+// Near-lowest visible brightness by default (0-255) — the ears are dazzling at full.
+#define NEOPIXEL_BRIGHTNESS 8
 
 #define EVENT_INIT 100
 
@@ -49,13 +53,13 @@ class NuggetScreen {
       virtual ~NuggetScreen();
       virtual bool draw() = 0;
       virtual int update(int){return SCREEN_NONE;};
-      void setDisplay(SH1106Wire*);
+      void setDisplay(SSD1306Wire*);
       void setInputs(NuggetInputs*);
       void setStrip(Adafruit_NeoPixel*);
       void setNuggetInterface(NuggetInterface*);
       int _update();
    protected:
-      SH1106Wire* display;
+      SSD1306Wire* display;
       NuggetInputs* inputs;
       Adafruit_NeoPixel* strip;
       void pushScreen(NuggetScreen*);
@@ -87,7 +91,7 @@ class NuggetInterface {
     bool popScreen();
     bool injectScreen(NuggetScreen*);
   private:
-    SH1106Wire* display;
+    SSD1306Wire* display;
     NuggetInputs* inputs;
     Adafruit_NeoPixel* strip;
     volatile ScreenNode* currentScreenNode;

@@ -1,6 +1,6 @@
 [submodule "src/third_party/EspTinyUSB"]
 	path = src/third_party/EspTinyUSB
-	url = git@github.com:RetiaLLC/EspTinyUSB.git
+	url = https://github.com/RetiaLLC/EspTinyUSB.git
  	branch = master
 [submodule "src/third_party/arduino_base64"]
 	path = src/third_party/arduino_base64

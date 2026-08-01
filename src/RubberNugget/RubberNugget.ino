@@ -1,11 +1,14 @@
 #include <Adafruit_NeoPixel.h>
 #include "src/RubberNugget.h"
+#include "src/recovery_fixed.h"   // R2 (corrected): boot-counter + watchdog auto-revert to the rescue
 #include "Arduino.h"
 #include <base64.h>
 #include "base64.hpp"
 
+#include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
+#include <DNSServer.h>   // captive portal
 
 #include "webUI/index.h"
 
@@ -14,19 +17,37 @@
 #include "src/interface/screens/dir.h"
 #include "src/interface/screens/runner.h"
 #include "src/interface/lib/NuggetInterface.h"
+#include "src/remote.h"   // remoteService() for the deferred screen dump
 
 const char *ssid = "Nugget AP";
 const char *password = "nugget123";
 
 WebServer server(80);
+DNSServer dnsServer;      // captive portal: resolve every host to the AP so the UI auto-opens
 
 TaskHandle_t webapp;
 TaskHandle_t nuggweb;
 
+// Captive portal: send any unknown URL (incl. the OS connectivity checks) to the
+// payload UI, so the "sign in to network" sheet pops the page open automatically.
+void handleCaptive() {
+  server.sendHeader("Location", String("http://") + WiFi.softAPIP().toString() + "/", true);
+  server.send(302, "text/plain", "");
+}
+
 void getPayloads() {
   String* payloadPaths = RubberNugget::allPayloadPaths();
+  if (payloadPaths == nullptr) {
+    // Empty/unreadable filesystem: return an empty list. allPayloadPaths()
+    // returns nullptr when there are no files — dereferencing it here used to
+    // crash the web-server task (LoadProhibited) on a fresh device, which
+    // aborted the page's payload fetch and left the CREATE buttons unwired.
+    server.send(200, "text/plain", "");
+    return;
+  }
   Serial.printf("[SERVER][getPayloads] %s\n", payloadPaths->c_str());
   server.send(200, "text/plain", *payloadPaths);
+  delete payloadPaths;   // allPayloadPaths() allocates a String on the heap
 }
 
 void handleRoot() {
@@ -99,12 +120,16 @@ void webrunlive() {
 
 void webserverInit(void *p) {
   while (1) {
+    remoteService();                  // deferred ~S screen dump (task ctx so CDC TX can drain)
+    dnsServer.processNextRequest();   // captive portal
     server.handleClient();
     vTaskDelay(2);
   }
 }
 
 void setup() {
+  recoveryBegin();   // R2: FIRST — arm boot-counter + watchdog before USB/radio init so a bad
+                     // build reverts to the rescue instead of wedging the bench (see src/recovery_fixed.h)
   Serial.begin(115200);
 
   RubberNugget::init();
@@ -116,7 +141,9 @@ void setup() {
   server.on("/runlive", HTTP_POST, webrunlive);
   server.on("/getpayload", HTTP_GET, webget);
   server.on("/runpayload", HTTP_GET, webrun);
+  server.onNotFound(handleCaptive);   // captive portal + friendly 404
 
+  dnsServer.start(53, "*", WiFi.softAPIP());   // hijack DNS so any hostname -> our UI
   server.begin();
 
   xTaskCreate(webserverInit, "webapptask", 12 * 1024, NULL, 5, &webapp); // create task priority 1

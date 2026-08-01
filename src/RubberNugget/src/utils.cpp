@@ -77,7 +77,9 @@ fileOp readFile(String path){
 fileOp base64Decode(String encoded) {
   fileOp ret;
   ret.ok = true;
-  encoded.replace(" ", "/"); // why
+  // A urlencoded form value decodes '+' to a space; '+' is a valid base64 char,
+  // so restore it (NOT '/', which corrupted any payload whose base64 held a '+').
+  encoded.replace(" ", "+");
   const char* encodedCStr = encoded.c_str();
   uint8_t decoded[BASE64::decodeLength(encodedCStr)+1]={0};
   BASE64::decode(encodedCStr, decoded);
