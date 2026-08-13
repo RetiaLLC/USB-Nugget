@@ -161,6 +161,7 @@
             <span class="nav">
                 <a href="#run">SCRIPTS</a>
                 <a href="#create">CREATE</a>
+                <a href="#network">NETWORK</a>
                 <a href="#reference">GUIDE</a>
             </span>
         </header>
@@ -210,6 +211,20 @@ $_OS                    inserts the detected OS name
 
 Hold B on the Nugget to STOP a running payload.</pre>
             <button id="loadJigglerButton" onclick="document.getElementById('createPayloadContent').value='// Mouse jiggler\nLOOP 240\n  JIGGLE 1\n  WAIT 2000\nENDLOOP';location.hash='#create';">LOAD JIGGLER PAYLOAD</button>
+        </section>
+        <section id="network">
+            <h2>NETWORK</h2>
+            <div id="wifiStatus">Loading&hellip;</div>
+            <h3>Join an existing Wi-Fi network</h3>
+            <p>The Nugget keeps its own <b>Nugget AP</b> and also joins the network below, so you can reach it from your LAN. Leave the password blank for an open network.</p>
+            <input id="staSsid" placeholder="Network name (SSID)"><br>
+            <input id="staPass" type="password" placeholder="Password"><br>
+            <button id="saveWifiButton">SAVE &amp; JOIN</button>
+            <button id="clearWifiButton">STOP JOINING</button>
+            <h3>Auto-deploy on plug-in</h3>
+            <p>When the Nugget is plugged into a host, auto-run the chosen script for the detected OS. Opt-in per OS; <b>hold LEFT while plugging in to cancel</b>. Leave an OS on <i>(disabled)</i> to do nothing.</p>
+            <div id="autorunRows"></div>
+            <button id="saveAutorunButton">SAVE AUTO-DEPLOY</button>
         </section>
         <section id="confirm-delete">
             <h2>DELETE PAYLOAD?</h2>
@@ -461,6 +476,63 @@ Hold B on the Nugget to STOP a running payload.</pre>
             let tree = generateFileStructure(payloadPaths)
             generateScriptElements(tree)
         }
+        // ---- NETWORK tab: Wi-Fi join + per-OS auto-deploy -------------------------------------
+        function prepareNetworkSection() {
+            document.getElementById("saveWifiButton").onclick = saveWifi
+            document.getElementById("clearWifiButton").onclick = ()=>{
+                document.getElementById("staSsid").value=""
+                document.getElementById("staPass").value=""
+                saveWifi()
+            }
+            document.getElementById("saveAutorunButton").onclick = saveAutorun
+            loadWifiStatus()
+            loadAutorun()
+        }
+        function loadWifiStatus() {
+            try {
+                let x = new XMLHttpRequest(); x.open("GET","/wifi",false); x.send()
+                let d = JSON.parse(x.responseText)
+                let s = "AP: <b>"+d.ap+"</b><br>Joining: <b>"+(d.sta_ssid||"(none)")+"</b>"
+                if (d.sta_ssid) s += "<br>Status: "+(d.connected ? ("connected — "+d.ip) : "connecting…")
+                document.getElementById("wifiStatus").innerHTML = s
+                if (d.sta_ssid) document.getElementById("staSsid").value = d.sta_ssid
+            } catch(e) { document.getElementById("wifiStatus").innerHTML = "(status unavailable)" }
+        }
+        function saveWifi() {
+            let ssid = document.getElementById("staSsid").value
+            let pass = document.getElementById("staPass").value
+            let x = new XMLHttpRequest(); x.open("POST","/savewifi",false)
+            x.setRequestHeader("Content-Type","application/x-www-form-urlencoded")
+            x.send("sta_ssid="+encodeURIComponent(ssid)+"&sta_pass="+encodeURIComponent(pass))
+            showResponseResult(x)
+            setTimeout(loadWifiStatus, 3500)
+        }
+        function loadAutorun() {
+            let paths = []; try { paths = getPayloadPaths() } catch(e) {}
+            let d = {}; try { let x=new XMLHttpRequest(); x.open("GET","/autorun",false); x.send(); d=JSON.parse(x.responseText) } catch(e) {}
+            let oses = [["win","Windows","WINDOWS"],["mac","macOS","MACOS"],["lin","Linux","LINUX"],["and","Android","ANDROID"],["ios","iOS","IOS"]]
+            let html = ""
+            for (const [k,label,osname] of oses) {
+                let cur = d[k]||""
+                let mark = (d.os===osname) ? " <span style='color:var(--success)'>◀ detected now</span>" : ""
+                html += "<label>"+label+mark+"</label><br><select id='ar_"+k+"'><option value=''>(disabled)</option>"
+                let seen = false
+                for (const p of paths) { let sel=(p===cur); if(sel) seen=true; html += "<option"+(sel?" selected":"")+">"+p+"</option>" }
+                if (cur && !seen) html += "<option selected>"+cur+"</option>"
+                html += "</select><br>"
+            }
+            document.getElementById("autorunRows").innerHTML = html
+        }
+        function saveAutorun() {
+            let g = k => { let e=document.getElementById("ar_"+k); return e?e.value:"" }
+            let body = "win="+encodeURIComponent(g("win"))+"&mac="+encodeURIComponent(g("mac"))+
+                       "&lin="+encodeURIComponent(g("lin"))+"&and="+encodeURIComponent(g("and"))+
+                       "&ios="+encodeURIComponent(g("ios"))
+            let x = new XMLHttpRequest(); x.open("POST","/saveautorun",false)
+            x.setRequestHeader("Content-Type","application/x-www-form-urlencoded")
+            x.send(body)
+            showResponseResult(x)
+        }
 
         if (window.location.hash === "" || window.location.hash === "#edit"){
             window.location = window.location.pathname+"#run"
@@ -474,6 +546,11 @@ Hold B on the Nugget to STOP a running payload.</pre>
             regenerateFileList()
         } catch (e) {
             console.error("could not load payload list:", e)
+        }
+        try {
+            prepareNetworkSection()
+        } catch (e) {
+            console.error("could not init network section:", e)
         }
         console.log("Done")
     </script>

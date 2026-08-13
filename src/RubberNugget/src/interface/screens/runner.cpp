@@ -19,7 +19,11 @@ extern volatile bool g_abortReq;    // set by ~PB/~PL over the serial remote (re
 static bool g_payloadStop = false;
 static bool wantStop() {
   if (g_payloadStop) return true;
-  if (digitalRead(BTN_B) == BTN_PRESS) g_payloadStop = true;   // physical B held
+#if BOARD_HAS_AB
+  if (digitalRead(BTN_B) == BTN_PRESS) g_payloadStop = true;      // hold physical B
+#else
+  if (digitalRead(BTN_LEFT) == BTN_PRESS) g_payloadStop = true;   // d-pad-only (S2): hold LEFT (back) = abort
+#endif
   else if (g_abortReq) g_payloadStop = true;                   // ~PB/~PL over serial
   return g_payloadStop;
 }
@@ -83,9 +87,9 @@ bool ScriptRunnerScreen::draw() {
   return true;
 }
 
-void resetPayloadScreen(SSD1306Wire* display);   // defined below; used by runPayload/processDuckyScript
+void resetPayloadScreen(NuggetDisplay* display);   // defined below; used by runPayload/processDuckyScript
 
-void runPayload(String payload, SSD1306Wire* display, Adafruit_NeoPixel* strip) {
+void runPayload(String payload, NuggetDisplay* display, Adafruit_NeoPixel* strip) {
     g_payloadStop = false; g_abortReq = false;   // fresh abort state each run
     resetPayloadScreen(display);                 // show "RUNNING PAYLOAD" at once (ScriptRunnerScreen cleared it)
     strip->fill(strip->Color(255,0, 0));
@@ -189,7 +193,7 @@ void pressNamedKey(String keyPress, uint8_t modifiers) {
   }
 }
 
-void resetPayloadScreen(SSD1306Wire* display) {
+void resetPayloadScreen(NuggetDisplay* display) {
   display->clear();
   display->drawLine(0, 54, 127, 54);
   display->drawLine(0, 53, 127, 53);
@@ -197,7 +201,7 @@ void resetPayloadScreen(SSD1306Wire* display) {
   display->display();
 }
 
-void processDuckyScript(String ducky, SSD1306Wire* display, Adafruit_NeoPixel* strip) {
+void processDuckyScript(String ducky, NuggetDisplay* display, Adafruit_NeoPixel* strip) {
   uint16_t defaultDelay = 10;
   // Strip leading/trailing whitespace FIRST. Lines inside a LOOP/ENDLOOP block
   // are indented; without this, indexOf(' ') would be 0 on an indented line and

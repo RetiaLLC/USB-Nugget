@@ -1,0 +1,33 @@
+# .usbnugget.conf  —  Bad Nugget / USB Nugget configuration
+# ----------------------------------------------------------------------------
+# Copy this file onto the Nugget's USB drive as ".usbnugget.conf" (note the
+# leading dot) and reboot. Every key is optional; omit a line to keep its
+# default. Values MUST be wrapped in double quotes exactly as shown.
+#
+# You can also set the Wi-Fi and auto-deploy options from the web UI's NETWORK
+# tab (http://nugget.local or http://192.168.4.1) — that writes this same file.
+
+# ---- Access point the Nugget broadcasts (its own network) ----
+network  = "Nugget AP"      # SoftAP SSID
+password = "nugget123"      # SoftAP password (must be >= 8 chars)
+
+# ---- Join an EXISTING Wi-Fi network (station mode) ----
+# Leave sta_ssid empty (or omit) for AP-only. When set, the Nugget keeps its own
+# AP *and* joins this network, so you can reach it from your LAN. On ESP32 the
+# SoftAP follows the joined network's channel, so an AP client briefly drops on
+# join — reconnect to the AP, or use the STA IP shown on the NETWORK tab.
+sta_ssid = ""               # e.g. "HomeWiFi"
+sta_pass = ""               # blank = open network
+
+# ---- OS auto-deploy: auto-run a payload when a host is detected on plug-in ----
+# Opt-in per OS: give a payload path and it runs automatically once that OS is
+# detected after plug-in. Hold LEFT while plugging in to cancel. Leave blank off.
+autorun_win = ""            # e.g. "/windows/hello.txt"
+autorun_mac = ""            # e.g. "/macos/hello.txt"
+autorun_lin = ""            # e.g. "/linux/hello.txt"
+autorun_and = ""            # e.g. "/android/hello.txt"
+autorun_ios = ""            # e.g. "/macos/hello.txt"  (iOS uses Mac-style keys)
+
+# ---- USB identity (advanced; hex, no 0x) ----
+vid = "05ac"                # default 05ac (Apple) — helps macOS/iOS treat it as a keyboard
+pid = "020b"
