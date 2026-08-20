@@ -1,12 +1,12 @@
 #pragma once
 #include <Arduino.h>
-class SSD1306Wire;
+#include "board_config.h"   // NuggetDisplay (SH1106/SSD1306) + feature flags
 
 // Serial remote-control (over the USB CDC): lets the workbench inject button presses,
 // read the exact OLED framebuffer, and reboot into the bootloader — for autonomous testing.
 int remotePopBtn();                 // next queued remote button press, or BTN_NONE (NuggetInputs::getInput)
 extern volatile bool g_abortReq;    // set by ~PB/~PL; the payload runner consumes it to abort (wantStop)
-extern SSD1306Wire* g_display;      // set by NuggetInterface so we can dump its 1024-byte buffer
+extern NuggetDisplay* g_display;    // set by NuggetInterface so we can dump its 1024-byte buffer
 extern volatile bool g_testHang;    // ~H sets this; the UI loop spins on it to prove the R2 watchdog
 
 // Feed raw CDC bytes; handles '~' framed commands:

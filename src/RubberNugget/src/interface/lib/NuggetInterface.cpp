@@ -10,12 +10,16 @@ NuggetInputs::NuggetInputs() {
   this->lastBtn = 0;
   this->pressedButton = -1;
 
+#if BOARD_HAS_DPAD
   this->addButton(BTN_UP);
   this->addButton(BTN_DOWN);
+#endif
   this->addButton(BTN_LEFT);
   this->addButton(BTN_RIGHT);
+#if BOARD_HAS_AB
   this->addButton(BTN_A);      // A = select/enter (mapped to RIGHT in getInput)
   this->addButton(BTN_B);      // B = back        (mapped to LEFT  in getInput)
+#endif
 }
 
 void NuggetInputs::addButton(int pin) {
@@ -41,9 +45,11 @@ int NuggetInputs::getInput() {
     buttonState = digitalRead(btn);
     if (buttonState==BTN_PRESS){
       this->pressedButton = btn;
+#if BOARD_HAS_AB
       if (btn == BTN_A) return BTN_RIGHT;   // A = select/enter
       if (btn == BTN_B) return BTN_LEFT;    // B = back
-      return btn;
+#endif
+      return btn;                            // d-pad-only boards (S2): RIGHT = select, LEFT = back
     }
   }
 
@@ -59,7 +65,7 @@ NuggetScreen::NuggetScreen(){
 }
 NuggetScreen::~NuggetScreen(){
 }
-void NuggetScreen::setDisplay(SSD1306Wire* display){
+void NuggetScreen::setDisplay(NuggetDisplay* display){
   this->display = display;
 }
 void NuggetScreen::setInputs(NuggetInputs* inputs){
@@ -89,27 +95,45 @@ int NuggetScreen::_update(){
 //----------------------------------------
 // NuggetInterface
 NuggetInterface::NuggetInterface(){
-  SSD1306Wire* nDisplay = new SSD1306Wire(0x3C, 35, 36);
-  g_display = nDisplay;                     // expose for the serial remote's screen dump
+  // Reuse the display RubberNugget::init() already brought up for boot-progress; only create one
+  // here if it somehow wasn't (defensive).
+  NuggetDisplay* nDisplay = g_display;
+  if (!nDisplay) {
+    nDisplay = new NuggetDisplay(OLED_ADDR, OLED_SDA, OLED_SCL);   // driver+pins per board_config.h
+    nDisplay->init();
+#if OLED_FLIP
+    nDisplay->flipScreenVertically();   // this board's OLED is mounted 180° vs the Nugget
+#endif
+    g_display = nDisplay;                // expose for the serial remote's screen dump
+  }
   this->inputs = new NuggetInputs();
   this->screenLock = xSemaphoreCreateMutex();
   if (this->screenLock == nullptr) {
     Serial.println("[NuggetInterface] mutex could not be created");
   }
-  nDisplay->init();
-  // OLED is mounted the same way as every other Nugget firmware (which use U8G2_R2 and
-  // read right-side-up); SSD1306Wire's default already matches, so DON'T flip here.
-  // nDisplay->flipScreenVertically();
   nDisplay->setTextAlignment(TEXT_ALIGN_LEFT);
   nDisplay->setFont(DejaVu_Sans_Mono_10);
   this->display = nDisplay;
   this->currentScreenNode = nullptr;
 
   pinMode(NEOPIXEL_PIN, OUTPUT);
-  this->strip = new Adafruit_NeoPixel(NEOPIXEL_PIN_CNT, NEOPIXEL_PIN, NEO_RGB + NEO_KHZ800);
+  this->strip = new Adafruit_NeoPixel(NEOPIXEL_PIN_CNT, NEOPIXEL_PIN, NEOPIXEL_TYPE);
   this->strip->begin();
-  this->strip->setBrightness(NEOPIXEL_BRIGHTNESS);   // dim both ears; full brightness is blinding
-  this->strip->show();                                // apply (clears to off at low brightness)
+  this->strip->setBrightness(NEOPIXEL_BRIGHTNESS);
+#if BOARD_HAS_DISPLAY
+  this->strip->show();               // screen boards: ring starts off (only lit as run feedback)
+#else
+  this->idleLeds();                  // screenless (Newsheen): warm-white idle = the "alive" indicator
+#endif
+}
+
+// Screenless boards (Newsheen): warm-white idle on the whole ring — the "alive, no payload running"
+// state the operator wants. Payloads' LED commands override it; it's restored when the menu redraws.
+void NuggetInterface::idleLeds(){
+  if (!this->strip) return;
+  for (int i = 0; i < NEOPIXEL_PIN_CNT; i++)
+    this->strip->setPixelColor(i, this->strip->Color(255, 160, 60));   // warm white (~2600K)
+  this->strip->show();
 }
 
 NuggetInterface::~NuggetInterface(){
@@ -140,6 +164,10 @@ bool NuggetInterface::start(){
 
     if (action==SCREEN_BACK){
       this->popScreen();
+#if !BOARD_HAS_DISPLAY
+      // screenless: a payload/submenu just exited — restore the warm-white idle ring at the home screen
+      if (this->currentScreenNode && this->currentScreenNode->prev == nullptr) this->idleLeds();
+#endif
     }
     if (action==SCREEN_REDRAW){
       this->draw();

@@ -1,7 +1,7 @@
 #include "remote.h"
 #include <string.h>
 #include <stdlib.h>
-#include "SSD1306Wire.h"
+#include "board_config.h"   // NuggetDisplay (SH1106/SSD1306), per board
 #include "interface/lib/NuggetInterface.h"
 #include "cdcusb.h"
 #include "soc/rtc_cntl_reg.h"
@@ -9,7 +9,7 @@
 
 extern CDCusb CDCUSBSerial;
 
-SSD1306Wire* g_display = nullptr;
+NuggetDisplay* g_display = nullptr;
 volatile bool g_testHang = false;
 volatile bool g_abortReq = false;        // ~PB/~PL during a payload -> stop it (runner wantStop)
 volatile int g_screenDumpReq = 0;        // ~S sets this to the requesting transport; remoteService() dumps

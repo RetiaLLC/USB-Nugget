@@ -12,4 +12,5 @@ class WifiScreen : public NuggetScreen {
     int update(int);
   private:
     bool lastUp;
+    unsigned long lastRefresh;   // periodic redraw so the STA IP appears live as the join completes
 };
